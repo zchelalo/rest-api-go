@@ -1,0 +1,32 @@
+version: '3.1'
+
+services:
+
+  go_rest_api_pg_db:
+    image: postgres:15.2
+    container_name: go_rest_api_pg_db
+    environment:
+      POSTGRES_PASSWORD: example
+      POSTGRES_DB: go_rest_api
+      TZ: America/Hermosillo
+    volumes:
+      - ./DB/postgresql:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  go_rest_api_adminer:
+    image: adminer
+    container_name: go_rest_api_adminer
+    environment:
+      TZ: America/Hermosillo
+      ADMINER_DESIGN: "ng9"
+    ports:
+      - 8080:8080
+    depends_on:
+      notitas_pg_db:
+        condition: service_started

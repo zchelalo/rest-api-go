@@ -28,17 +28,17 @@ type (
 	}
 )
 
-func MakeEndpoints() Endpoints {
+func MakeEndpoints(service Service) Endpoints {
 	return Endpoints{
-		Create: makeCreateEndpoint(),
-		Get:    makeGetEndpoint(),
-		GetAll: makeGetAllEndpoint(),
-		Update: makeUpdateEndpoint(),
-		Delete: makeDeleteEndpoint(),
+		Create: makeCreateEndpoint(service),
+		Get:    makeGetEndpoint(service),
+		GetAll: makeGetAllEndpoint(service),
+		Update: makeUpdateEndpoint(service),
+		Delete: makeDeleteEndpoint(service),
 	}
 }
 
-func makeCreateEndpoint() Controller {
+func makeCreateEndpoint(service Service) Controller {
 	return func(w http.ResponseWriter, req *http.Request) {
 		var request CreateRequest
 		if err := json.NewDecoder(req.Body).Decode(&request); err != nil {
@@ -68,6 +68,14 @@ func makeCreateEndpoint() Controller {
 			return
 		}
 
+		if err := service.Create(request.FirstName, request.LastName, request.Email, request.Phone); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(ErrorResponse{
+				err.Error(),
+			})
+			return
+		}
+
 		w.WriteHeader(http.StatusCreated)
 
 		// json.NewEncoder(w).Encode(map[string]string{
@@ -77,7 +85,7 @@ func makeCreateEndpoint() Controller {
 	}
 }
 
-func makeGetEndpoint() Controller {
+func makeGetEndpoint(service Service) Controller {
 	return func(w http.ResponseWriter, req *http.Request) {
 		response := "get"
 
@@ -87,7 +95,7 @@ func makeGetEndpoint() Controller {
 	}
 }
 
-func makeGetAllEndpoint() Controller {
+func makeGetAllEndpoint(service Service) Controller {
 	return func(w http.ResponseWriter, req *http.Request) {
 		response := "getall"
 
@@ -97,7 +105,7 @@ func makeGetAllEndpoint() Controller {
 	}
 }
 
-func makeUpdateEndpoint() Controller {
+func makeUpdateEndpoint(service Service) Controller {
 	return func(w http.ResponseWriter, req *http.Request) {
 		response := "update"
 
@@ -107,7 +115,7 @@ func makeUpdateEndpoint() Controller {
 	}
 }
 
-func makeDeleteEndpoint() Controller {
+func makeDeleteEndpoint(service Service) Controller {
 	return func(w http.ResponseWriter, req *http.Request) {
 		response := "delete"
 

@@ -14,7 +14,8 @@ func main() {
 
 	router := http.NewServeMux()
 
-	userEndpoints := user.MakeEndpoints()
+	userService := user.NewService()
+	userEndpoints := user.MakeEndpoints(userService)
 
 	router.HandleFunc("GET /users", userEndpoints.GetAll)
 	router.HandleFunc("GET /users/{id}", userEndpoints.Get)

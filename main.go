@@ -4,13 +4,39 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/zchelalo/rest-api-go/internal/user"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 func main() {
-	port := ":3333"
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("error loading .env file")
+	}
+	port := os.Getenv("PORT")
+
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=America/Hermosillo",
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASS"),
+		os.Getenv("DB_NAME"),
+		os.Getenv("DB_PORT"),
+	)
+
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	db = db.Debug()
+	log.Println("Connected to the database")
+	if err := db.AutoMigrate(&user.User{}); err != nil {
+		log.Fatal(err)
+	}
 
 	router := http.NewServeMux()
 

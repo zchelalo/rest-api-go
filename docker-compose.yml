@@ -28,5 +28,5 @@ services:
     ports:
       - 8080:8080
     depends_on:
-      notitas_pg_db:
+      go_rest_api_pg_db:
         condition: service_started

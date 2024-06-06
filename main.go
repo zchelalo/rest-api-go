@@ -40,7 +40,9 @@ func main() {
 
 	router := http.NewServeMux()
 
-	userService := user.NewService()
+	logger := log.New(os.Stdout, "", log.LstdFlags|log.Lshortfile)
+	userRepository := user.NewRepository(logger, db)
+	userService := user.NewService(logger, userRepository)
 	userEndpoints := user.MakeEndpoints(userService)
 
 	router.HandleFunc("GET /users", userEndpoints.GetAll)

@@ -2,6 +2,7 @@ package user
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
@@ -47,7 +48,7 @@ func makeCreateEndpoint(service Service) Controller {
 			// 	Error: err.Error(),
 			// })
 			json.NewEncoder(w).Encode(ErrorResponse{
-				"Invalid request format",
+				fmt.Sprintf("Invalid request format, %v", err.Error()),
 			})
 			return
 		}
@@ -68,7 +69,8 @@ func makeCreateEndpoint(service Service) Controller {
 			return
 		}
 
-		if err := service.Create(request.FirstName, request.LastName, request.Email, request.Phone); err != nil {
+		user, err := service.Create(request.FirstName, request.LastName, request.Email, request.Phone)
+		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			json.NewEncoder(w).Encode(ErrorResponse{
 				err.Error(),
@@ -81,27 +83,49 @@ func makeCreateEndpoint(service Service) Controller {
 		// json.NewEncoder(w).Encode(map[string]string{
 		// 	"payload": response,
 		// })
-		json.NewEncoder(w).Encode(request)
+		json.NewEncoder(w).Encode(user)
 	}
 }
 
 func makeGetEndpoint(service Service) Controller {
 	return func(w http.ResponseWriter, req *http.Request) {
-		response := "get"
+		id := req.PathValue("id")
 
-		json.NewEncoder(w).Encode(map[string]string{
-			"payload": response,
-		})
+		user, err := service.Get(id)
+		if err != nil {
+			w.WriteHeader(http.StatusNotFound)
+			json.NewEncoder(w).Encode(ErrorResponse{
+				err.Error(),
+			})
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+
+		// json.NewEncoder(w).Encode(map[string]string{
+		// 	"payload": response,
+		// })
+		json.NewEncoder(w).Encode(user)
 	}
 }
 
 func makeGetAllEndpoint(service Service) Controller {
 	return func(w http.ResponseWriter, req *http.Request) {
-		response := "getall"
+		users, err := service.GetAll()
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(ErrorResponse{
+				err.Error(),
+			})
+			return
+		}
 
-		json.NewEncoder(w).Encode(map[string]string{
-			"payload": response,
-		})
+		w.WriteHeader(http.StatusCreated)
+
+		// json.NewEncoder(w).Encode(map[string]string{
+		// 	"payload": response,
+		// })
+		json.NewEncoder(w).Encode(users)
 	}
 }
 

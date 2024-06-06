@@ -12,8 +12,8 @@ type (
 		Create(user *User) error
 		GetAll() ([]User, error)
 		Get(id string) (*User, error)
-		// Update(id string, user *User) error
-		// Delete(id string) error
+		Update(id string, firstName, lastName, email, phone *string) error
+		Delete(id string) error
 	}
 
 	repository struct {
@@ -58,11 +58,50 @@ func (repo *repository) Get(id string) (*User, error) {
 		Id: id,
 	}
 
-	// if err := repo.db.Model(&user).Where("id = ?", id).First(&user).Error; err != nil {
 	if err := repo.db.Model(&user).First(&user).Error; err != nil {
 		repo.log.Println(err)
 		return nil, err
 	}
 
 	return &user, nil
+}
+
+func (repo *repository) Update(id string, firstName, lastName, email, phone *string) error {
+	values := make(map[string]interface{})
+
+	if firstName != nil {
+		values["first_name"] = *firstName
+	}
+
+	if lastName != nil {
+		values["last_name"] = *lastName
+	}
+
+	if email != nil {
+		values["email"] = *email
+	}
+
+	if phone != nil {
+		values["phone"] = *phone
+	}
+
+	if err := repo.db.Model(&User{}).Where("id = ?", id).Updates(values).Error; err != nil {
+		repo.log.Println(err)
+		return err
+	}
+
+	return nil
+}
+
+func (repo *repository) Delete(id string) error {
+	user := User{
+		Id: id,
+	}
+
+	if err := repo.db.Model(&user).Delete(&user).Error; err != nil {
+		repo.log.Println(err)
+		return err
+	}
+
+	return nil
 }

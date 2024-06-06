@@ -7,6 +7,8 @@ type (
 		Create(firstName, lastName, email, phone string) (*User, error)
 		GetAll() ([]User, error)
 		Get(id string) (*User, error)
+		Update(id string, firstName, lastName, email, phone *string) error
+		Delete(id string) error
 	}
 
 	service struct {
@@ -55,4 +57,22 @@ func (srv *service) Get(id string) (*User, error) {
 		return nil, err
 	}
 	return user, nil
+}
+
+func (srv *service) Update(id string, firstName, lastName, email, phone *string) error {
+	srv.log.Println("update user service")
+	if err := srv.repository.Update(id, firstName, lastName, email, phone); err != nil {
+		// srv.log.Println(err)
+		return err
+	}
+	return nil
+}
+
+func (srv *service) Delete(id string) error {
+	srv.log.Println("delete user service")
+	if err := srv.repository.Delete(id); err != nil {
+		// srv.log.Println(err)
+		return err
+	}
+	return nil
 }

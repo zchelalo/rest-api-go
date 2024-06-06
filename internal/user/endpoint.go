@@ -24,6 +24,13 @@ type (
 		Phone     string `json:"phone"`
 	}
 
+	UpdateRequest struct {
+		FirstName *string `json:"first_name"`
+		LastName  *string `json:"last_name"`
+		Email     *string `json:"email"`
+		Phone     *string `json:"phone"`
+	}
+
 	ErrorResponse struct {
 		Error string `json:"error"`
 	}
@@ -131,20 +138,66 @@ func makeGetAllEndpoint(service Service) Controller {
 
 func makeUpdateEndpoint(service Service) Controller {
 	return func(w http.ResponseWriter, req *http.Request) {
-		response := "update"
+		id := req.PathValue("id")
+
+		var request UpdateRequest
+		if err := json.NewDecoder(req.Body).Decode(&request); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(ErrorResponse{
+				fmt.Sprintf("Invalid request format, %v", err.Error()),
+			})
+			return
+		}
+
+		if request.FirstName != nil && *request.FirstName == "" {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(ErrorResponse{
+				"First name is required",
+			})
+			return
+		}
+
+		if request.LastName != nil && *request.LastName == "" {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(ErrorResponse{
+				"Last name is required",
+			})
+			return
+		}
+
+		if err := service.Update(id, request.FirstName, request.LastName, request.Email, request.Phone); err != nil {
+			w.WriteHeader(http.StatusNotFound)
+			json.NewEncoder(w).Encode(ErrorResponse{
+				"User doesn't exist",
+			})
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
 
 		json.NewEncoder(w).Encode(map[string]string{
-			"payload": response,
+			"message": "User updated successfully",
 		})
 	}
 }
 
 func makeDeleteEndpoint(service Service) Controller {
 	return func(w http.ResponseWriter, req *http.Request) {
-		response := "delete"
+		id := req.PathValue("id")
+
+		err := service.Delete(id)
+		if err != nil {
+			w.WriteHeader(http.StatusNotFound)
+			json.NewEncoder(w).Encode(ErrorResponse{
+				err.Error(),
+			})
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
 
 		json.NewEncoder(w).Encode(map[string]string{
-			"payload": response,
+			"message": "User deleted successfully",
 		})
 	}
 }

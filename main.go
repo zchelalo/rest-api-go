@@ -9,38 +9,25 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/zchelalo/rest-api-go/internal/user"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+	"github.com/zchelalo/rest-api-go/pkg/bootstrap"
 )
 
 func main() {
+	logger := bootstrap.InitLogger()
+
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("error loading .env file")
+		logger.Fatal("error loading .env file")
 	}
 	port := os.Getenv("PORT")
 
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=America/Hermosillo",
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASS"),
-		os.Getenv("DB_NAME"),
-		os.Getenv("DB_PORT"),
-	)
-
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := bootstrap.DBConnection()
 	if err != nil {
-		log.Fatal(err)
-	}
-	db = db.Debug()
-	log.Println("Connected to the database")
-	if err := db.AutoMigrate(&user.User{}); err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 
 	router := http.NewServeMux()
 
-	logger := log.New(os.Stdout, "", log.LstdFlags|log.Lshortfile)
 	userRepository := user.NewRepository(logger, db)
 	userService := user.NewService(logger, userRepository)
 	userEndpoints := user.MakeEndpoints(userService)
@@ -61,13 +48,3 @@ func main() {
 
 	log.Fatal(server.ListenAndServe())
 }
-
-// func getCourse(w http.ResponseWriter, req *http.Request) {
-// 	id := req.PathValue("id")
-
-// 	response := fmt.Sprintf("course%s", id)
-
-// 	json.NewEncoder(w).Encode(map[string]string{
-// 		"payload": response,
-// 	})
-// }

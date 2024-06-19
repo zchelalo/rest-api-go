@@ -3,9 +3,14 @@ package user
 import "log"
 
 type (
+	Filters struct {
+		FirstName string
+		LastName  string
+	}
+
 	Service interface {
 		Create(firstName, lastName, email, phone string) (*User, error)
-		GetAll() ([]User, error)
+		GetAll(filters Filters) ([]User, error)
 		Get(id string) (*User, error)
 		Update(id string, firstName, lastName, email, phone *string) error
 		Delete(id string) error
@@ -39,9 +44,9 @@ func (srv *service) Create(firstName, lastName, email, phone string) (*User, err
 	return &user, nil
 }
 
-func (srv *service) GetAll() ([]User, error) {
+func (srv *service) GetAll(filters Filters) ([]User, error) {
 	srv.log.Println("get all users service")
-	users, err := srv.repository.GetAll()
+	users, err := srv.repository.GetAll(filters)
 	if err != nil {
 		// srv.log.Println(err)
 		return nil, err

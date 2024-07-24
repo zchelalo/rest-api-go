@@ -44,7 +44,7 @@ func (repo *repository) Create(user *User) error {
 func (repo *repository) GetAll(filters Filters, offset, limit int) ([]User, error) {
 	var users []User
 
-	tx := repo.db.Model(&User{})
+	tx := repo.db.Model(&users)
 	tx = applyFilters(tx, filters)
 	tx = tx.Limit(limit).Offset(offset)
 	// if err := repo.db.Model(&users).Select("id, first_name, email, created_at").Order("created_at desc").Find(&users).Error; err != nil {

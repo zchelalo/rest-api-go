@@ -44,7 +44,7 @@ func (repo *repository) Create(course *Course) error {
 
 func (repo *repository) GetAll(filters Filters, offset, limit int) ([]Course, error) {
 	var courses []Course
-	tx := repo.db.Model(&Course{})
+	tx := repo.db.Model(&courses)
 	tx = applyFilters(tx, filters)
 	tx = tx.Limit(limit).Offset(offset)
 	if err := tx.Order("created_at desc").Find(&courses).Error; err != nil {

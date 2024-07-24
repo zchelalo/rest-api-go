@@ -1,0 +1,18 @@
+meta {
+  name: POST
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{http}}://{{host}}/enrollments
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "user_id": "241bf460-f905-47d1-a0d0-576986095d26",
+    "course_id": "87848756-35ae-4947-a290-a43faf8fd83c"
+  }
+}

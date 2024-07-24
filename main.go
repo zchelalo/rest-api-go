@@ -9,6 +9,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/zchelalo/rest-api-go/internal/course"
+	"github.com/zchelalo/rest-api-go/internal/enrollment"
 	"github.com/zchelalo/rest-api-go/internal/user"
 	"github.com/zchelalo/rest-api-go/pkg/bootstrap"
 )
@@ -48,6 +49,12 @@ func main() {
 	router.HandleFunc("GET /courses/{id}", courseEndpoints.Get)
 	router.HandleFunc("PATCH /courses/{id}", courseEndpoints.Update)
 	router.HandleFunc("DELETE /courses/{id}", courseEndpoints.Delete)
+
+	enrollmentRepository := enrollment.NewRepository(logger, db)
+	enrollmentService := enrollment.NewService(enrollmentRepository, logger, userService, courseService)
+	enrollmentEndpoints := enrollment.MakeEndpoints(enrollmentService)
+
+	router.HandleFunc("POST /enrollments", enrollmentEndpoints.Create)
 
 	server := &http.Server{
 		// Handler:      http.TimeoutHandler(router, 5*time.Second, "Timeout!"),

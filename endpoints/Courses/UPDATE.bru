@@ -1,0 +1,18 @@
+meta {
+  name: UPDATE
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{http}}://{{host}}/courses/ca552b5c-b27a-4e65-a0be-0a7fbffd491b
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "test",
+    "start_date": "2024-08-31"
+  }
+}

@@ -8,8 +8,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
-	"github.com/zchelalo/rest-api-go/internal/course"
-	"github.com/zchelalo/rest-api-go/internal/user"
+	"github.com/zchelalo/rest-api-go/internal/domain"
 )
 
 func InitLogger() *log.Logger {
@@ -35,11 +34,11 @@ func DBConnection() (*gorm.DB, error) {
 	}
 
 	if os.Getenv("DB_AUTO_MIGRATE") == "true" {
-		if err := db.AutoMigrate(&user.User{}); err != nil {
+		if err := db.AutoMigrate(&domain.User{}); err != nil {
 			return nil, err
 		}
 
-		if err := db.AutoMigrate(&course.Course{}); err != nil {
+		if err := db.AutoMigrate(&domain.Course{}); err != nil {
 			return nil, err
 		}
 	}

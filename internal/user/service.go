@@ -1,6 +1,10 @@
 package user
 
-import "log"
+import (
+	"log"
+
+	"github.com/zchelalo/rest-api-go/internal/domain"
+)
 
 type (
 	Filters struct {
@@ -9,9 +13,9 @@ type (
 	}
 
 	Service interface {
-		Create(firstName, lastName, email, phone string) (*User, error)
-		GetAll(filters Filters, offset, limit int) ([]User, error)
-		Get(id string) (*User, error)
+		Create(firstName, lastName, email, phone string) (*domain.User, error)
+		GetAll(filters Filters, offset, limit int) ([]domain.User, error)
+		Get(id string) (*domain.User, error)
 		Update(id string, firstName, lastName, email, phone *string) error
 		Delete(id string) error
 		Count(filters Filters) (int, error)
@@ -30,9 +34,9 @@ func NewService(log *log.Logger, repo Repository) Service {
 	}
 }
 
-func (srv *service) Create(firstName, lastName, email, phone string) (*User, error) {
+func (srv *service) Create(firstName, lastName, email, phone string) (*domain.User, error) {
 	srv.log.Println("create user service")
-	user := User{
+	user := domain.User{
 		FirstName: firstName,
 		LastName:  lastName,
 		Email:     email,
@@ -45,7 +49,7 @@ func (srv *service) Create(firstName, lastName, email, phone string) (*User, err
 	return &user, nil
 }
 
-func (srv *service) GetAll(filters Filters, offset, limit int) ([]User, error) {
+func (srv *service) GetAll(filters Filters, offset, limit int) ([]domain.User, error) {
 	srv.log.Println("get all users service")
 	users, err := srv.repository.GetAll(filters, offset, limit)
 	if err != nil {
@@ -55,7 +59,7 @@ func (srv *service) GetAll(filters Filters, offset, limit int) ([]User, error) {
 	return users, nil
 }
 
-func (srv *service) Get(id string) (*User, error) {
+func (srv *service) Get(id string) (*domain.User, error) {
 	srv.log.Println("get user service")
 	user, err := srv.repository.Get(id)
 	if err != nil {

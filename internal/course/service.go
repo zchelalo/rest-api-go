@@ -3,6 +3,8 @@ package course
 import (
 	"log"
 	"time"
+
+	"github.com/zchelalo/rest-api-go/internal/domain"
 )
 
 type (
@@ -11,9 +13,9 @@ type (
 	}
 
 	Service interface {
-		Create(name, startDate, endDate string) (*Course, error)
-		GetAll(filters Filters, offset, limit int) ([]Course, error)
-		Get(id string) (*Course, error)
+		Create(name, startDate, endDate string) (*domain.Course, error)
+		GetAll(filters Filters, offset, limit int) ([]domain.Course, error)
+		Get(id string) (*domain.Course, error)
 		Update(id string, name, startDate, endDate *string) error
 		Delete(id string) error
 		Count(filters Filters) (int, error)
@@ -32,7 +34,7 @@ func NewService(repo Repository, log *log.Logger) Service {
 	}
 }
 
-func (srv *service) Create(name, startDate, endDate string) (*Course, error) {
+func (srv *service) Create(name, startDate, endDate string) (*domain.Course, error) {
 	startDateParsed, err := time.Parse("2006-01-02", startDate)
 	if err != nil {
 		srv.log.Println(err)
@@ -45,7 +47,7 @@ func (srv *service) Create(name, startDate, endDate string) (*Course, error) {
 		return nil, err
 	}
 
-	course := &Course{
+	course := &domain.Course{
 		Name:      name,
 		StartDate: startDateParsed,
 		EndDate:   endDateParsed,
@@ -59,7 +61,7 @@ func (srv *service) Create(name, startDate, endDate string) (*Course, error) {
 	return course, nil
 }
 
-func (srv *service) GetAll(filters Filters, offset, limit int) ([]Course, error) {
+func (srv *service) GetAll(filters Filters, offset, limit int) ([]domain.Course, error) {
 	srv.log.Println("get all courses service")
 	courses, err := srv.repository.GetAll(filters, offset, limit)
 	if err != nil {
@@ -68,7 +70,7 @@ func (srv *service) GetAll(filters Filters, offset, limit int) ([]Course, error)
 	return courses, nil
 }
 
-func (srv *service) Get(id string) (*Course, error) {
+func (srv *service) Get(id string) (*domain.Course, error) {
 	srv.log.Println("get course service")
 	course, err := srv.repository.Get(id)
 	if err != nil {

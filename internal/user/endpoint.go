@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
+
+	"github.com/zchelalo/rest-api-go/pkg/meta"
 )
 
 type status string
@@ -42,6 +45,7 @@ type (
 		Status status      `json:"status"`
 		Data   interface{} `json:"data,omitempty"`
 		Error  string      `json:"error,omitempty"`
+		Meta   *meta.Meta  `json:"meta,omitempty"`
 	}
 )
 
@@ -141,7 +145,29 @@ func makeGetAllEndpoint(service Service) Controller {
 			LastName:  queries.Get("last_name"),
 		}
 
-		users, err := service.GetAll(filters)
+		limit, _ := strconv.Atoi(queries.Get("limit"))
+		page, _ := strconv.Atoi(queries.Get("page"))
+
+		count, err := service.Count(filters)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(&Response{
+				Status: statusError,
+				Error:  err.Error(),
+			})
+			return
+		}
+		meta, err := meta.New(page, limit, count)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(&Response{
+				Status: statusError,
+				Error:  err.Error(),
+			})
+			return
+		}
+
+		users, err := service.GetAll(filters, meta.Offset(), meta.Limit())
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(&Response{
@@ -151,7 +177,7 @@ func makeGetAllEndpoint(service Service) Controller {
 			return
 		}
 
-		w.WriteHeader(http.StatusCreated)
+		w.WriteHeader(http.StatusOK)
 
 		// json.NewEncoder(w).Encode(map[string]string{
 		// 	"payload": response,
@@ -159,6 +185,7 @@ func makeGetAllEndpoint(service Service) Controller {
 		json.NewEncoder(w).Encode(&Response{
 			Status: statusSuccess,
 			Data:   users,
+			Meta:   meta,
 		})
 	}
 }

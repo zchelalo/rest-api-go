@@ -3,6 +3,7 @@ package user
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -15,4 +16,11 @@ type User struct {
 	CreatedAt *time.Time     `json:"-"`
 	UpdatedAt *time.Time     `json:"-"`
 	DeletedAt gorm.DeletedAt `json:"-"`
+}
+
+func (user *User) BeforeCreate(tx *gorm.DB) (err error) {
+	if user.Id == "" {
+		user.Id = uuid.New().String()
+	}
+	return
 }

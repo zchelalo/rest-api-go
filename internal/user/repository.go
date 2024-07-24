@@ -5,17 +5,17 @@ import (
 	"log"
 	"strings"
 
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type (
 	Repository interface {
 		Create(user *User) error
-		GetAll(filters Filters) ([]User, error)
+		GetAll(filters Filters, offset, limit int) ([]User, error)
 		Get(id string) (*User, error)
 		Update(id string, firstName, lastName, email, phone *string) error
 		Delete(id string) error
+		Count(filters Filters) (int, error)
 	}
 
 	repository struct {
@@ -32,8 +32,6 @@ func NewRepository(log *log.Logger, db *gorm.DB) Repository {
 }
 
 func (repo *repository) Create(user *User) error {
-	user.Id = uuid.New().String()
-
 	if err := repo.db.Create(user).Error; err != nil {
 		repo.log.Println(err)
 		return err
@@ -43,12 +41,12 @@ func (repo *repository) Create(user *User) error {
 	return nil
 }
 
-func (repo *repository) GetAll(filters Filters) ([]User, error) {
+func (repo *repository) GetAll(filters Filters, offset, limit int) ([]User, error) {
 	var users []User
 
 	tx := repo.db.Model(&User{})
 	tx = applyFilters(tx, filters)
-
+	tx = tx.Limit(limit).Offset(offset)
 	// if err := repo.db.Model(&users).Select("id, first_name, email, created_at").Order("created_at desc").Find(&users).Error; err != nil {
 	if err := tx.Order("created_at desc").Find(&users).Error; err != nil {
 		repo.log.Println(err)
@@ -109,6 +107,17 @@ func (repo *repository) Delete(id string) error {
 	}
 
 	return nil
+}
+
+func (repo *repository) Count(filters Filters) (int, error) {
+	var count int64
+	tx := repo.db.Model(&User{})
+	tx = applyFilters(tx, filters)
+	if err := tx.Count(&count).Error; err != nil {
+		return 0, err
+	}
+
+	return int(count), nil
 }
 
 func applyFilters(tx *gorm.DB, filters Filters) *gorm.DB {
